@@ -4,6 +4,9 @@
     <BuildType Name="r2024" />
     <BuildType Name="r2025" />
   </Configurations>
+  <Folder Name="/AddinManifests/">
+    <File Path="AddinManifests/AutoNumber.addin" />
+  </Folder>
   <Folder Name="/Build/">
     <File Path="Build/build-script.ps1" />
     <File Path="Build/RevitProject.props" />

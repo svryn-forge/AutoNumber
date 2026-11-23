@@ -45,4 +45,55 @@
 	<Target Name="CheckRevitVersion" BeforeTargets="BeforeBuild" Condition="'$(RevitVersion)' == ''">
 		<Error Text="RevitVersion не задан. Выберите конфигурацию r2019..r2026 (текущая: $(Configuration))." />
 	</Target>
+
+	<PropertyGroup Condition="'$(RevitVersion)' != ''">
+		<RevitAddinsPath>$(APPDATA)\Autodesk\Revit\Addins\$(RevitVersion)</RevitAddinsPath>
+		<PluginOutputPath>$(RevitAddinsPath)\AutoNumber</PluginOutputPath>
+		<AddinManifestPath>$(ProjectDir)..\AddinManifests\AutoNumber.addin</AddinManifestPath>
+	</PropertyGroup>
+	
+	<Target Name="DeployRevitPlugin"
+        AfterTargets="Build"
+        Condition="'$(RevitVersion)' != ''">
+
+		<Message Importance="High"
+				 Text="=== DeployRevitPlugin START ===" />
+
+		<Message Importance="High"
+				 Text="Configuration: $(Configuration)" />
+
+		<Message Importance="High"
+				 Text="RevitVersion: $(RevitVersion)" />
+
+		<Message Importance="High"
+				 Text="TargetDir: $(TargetDir)" />
+
+		<Message Importance="High"
+				 Text="PluginOutputPath: $(PluginOutputPath)" />
+
+		<Message Importance="High"
+				 Text="RevitAddinsPath: $(RevitAddinsPath)" />
+
+		<MakeDir Directories="$(RevitAddinsPath)" />
+		<MakeDir Directories="$(PluginOutputPath)" />
+
+		<ItemGroup>
+			<PluginFiles Include="$(TargetDir)**\*.*" />
+		</ItemGroup>
+
+		<Copy
+			SourceFiles="@(PluginFiles)"
+			DestinationFiles="@(PluginFiles->'$(PluginOutputPath)\%(RecursiveDir)%(Filename)%(Extension)')"
+			SkipUnchangedFiles="true" />
+
+		<Copy
+			SourceFiles="$(AddinManifestPath)"
+			DestinationFiles="$(RevitAddinsPath)\AutoNumber.addin"
+			SkipUnchangedFiles="true" />
+
+		<Message Importance="High"
+				 Text="=== DeployRevitPlugin FINISHED ===" />
+
+	</Target>
+
 </Project>
