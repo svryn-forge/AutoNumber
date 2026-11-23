@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
+using Svrin.Core.Abstractions;
 using Svrin.Core.Helpers;
-using Svrin.Core.Properties;
 
 namespace Svrin.Core.Providers
 {
@@ -39,9 +39,7 @@ namespace Svrin.Core.Providers
 
         private static string GetFilePath(string filename)
         {
-            var path = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                Resources.AddInName);
+            var path = AppPaths.AddInDirectory;
 
             try
             {

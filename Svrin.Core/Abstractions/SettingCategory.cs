@@ -1,4 +1,6 @@
-﻿namespace Svrin.Core.Abstractions
+﻿using System.Text;
+
+namespace Svrin.Core.Abstractions
 {
     public class SettingCategory : BaseViewModel
     {
@@ -31,7 +33,30 @@
         public int Padding
         {
             get => padding;
-            set => OnPropertyChanged(ref padding, value);
+            set
+            {
+                if (value < 1)
+                    value = 1;
+
+                if (!OnPropertyChanged(ref padding, value))
+                    return;
+
+                StringBuilder sb = new StringBuilder("{Prefix}-{Уровень}-{N:");
+                for (int i = 0; i < value; i++)
+                    sb.Append('0');
+
+                sb.Append('}');
+
+                Template = sb.ToString();
+            }
+        }
+
+        private string _template = "{Prefix}-{Уровень}-{N:000}";
+
+        public string Template
+        {
+            get => _template;
+            private set => OnPropertyChanged(ref _template, value);
         }
 
         public SettingCategory Clone() => new()
