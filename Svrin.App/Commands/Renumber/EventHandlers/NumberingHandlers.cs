@@ -18,22 +18,19 @@ namespace Svrin.App.Commands.Renumber.EventHandlers
         public void Load(object obj)
         {
             if (obj is NumberingVM vm)
-            {
                 _loadEventHandler.Raise(vm);
-            }
         }
 
-        public void Apply(string? title, IReadOnlyCollection<ElementFromModel>? elements)
+        public void Apply(object obj)
         {
-            _aplyEventHandler.Raise(title, elements);
+            if (obj is NumberingVM vm)
+                _aplyEventHandler.Raise(vm);
         }
 
         public void ChangeSettings(object obj)
         {
             if (obj is NumberingVM vm)
-            {
                 _changeSettings.Raise(vm);
-            }
         }
     }
 }

@@ -3,10 +3,11 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Svrin.App.Revit;
 using Svrin.App.Revit.Extensions;
+using Svrin.App.Revit.Helpers;
 using Svrin.Core.Abstractions;
-using Svrin.Core.Helpers;
 using Svrin.Core.Providers;
 using Svrin.Wpf.ViewModels;
+using System.Diagnostics;
 
 namespace Svrin.App.Commands.Renumber.EventHandlers
 {
@@ -19,91 +20,122 @@ namespace Svrin.App.Commands.Renumber.EventHandlers
             if (vm == null)
                 return;
 
-            if (!app.IsValid())
-                return;
-
-            var uidoc = app.ActiveUIDocument;
-            var doc = uidoc.Document;
-            vm.Elements.Clear();
-
-            var settings = JsonSetting<ElementNumberingSettings>.Open();
-            vm.Settings = settings;
-            vm.CurrentDocument = doc.Title;
-
-            ElementNumberingSettings.LoadDefault(settings);
-
-            var selectedIds = uidoc.Selection.GetElementIds();
-            if (selectedIds.Count != 0)
+            bool hasErrors = false;
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            try
             {
-                var selectedElements = selectedIds.Select(x => doc.GetElement(x)).ToList();
-                foreach (var e in selectedElements)
+                if (!app.IsValid())
+                    return;
+
+                var uidoc = app.ActiveUIDocument;
+                if (!uidoc.IsValid())
+                    return;
+
+                var doc = uidoc.Document;
+                if (!doc.IsValid())
+                    return;
+
+                vm.Elements.Clear();
+
+                var settings = JsonSetting<ElementNumberingSettings>.Open();
+                vm.Settings = settings;
+                vm.CurrentDocument = doc.Title;
+
+                ElementNumberingSettings.LoadDefault(settings);
+
+                var selectedIds = uidoc.Selection.GetElementIds();
+                if (selectedIds.Count != 0)
                 {
-                    if (!e.IsValid())
-                        continue;
-
-                    if (e.Category is Category c)
-                    {
-                        var cId = c.Id.GetValue();
-
-                        var s = settings.CategorySet.FirstOrDefault(x => x.Id != cId);
-                        if (s == null)
-                            continue;
-
-                        CreateItem(doc, e, s, c.Id.GetValue(), vm);
-                    }
-                }
-            }
-            else
-            {
-                foreach (var s in settings.CategorySet)
-                {
-                    var bic = (BuiltInCategory)s.Id;
-                    if (!Enum.IsDefined(typeof(BuiltInCategory), bic))
-                        continue;
-
-                    foreach (var e in new FilteredElementCollector(doc)
-                        .OfCategory(bic)
-                        .WhereElementIsNotElementType())
+                    var selectedElements = selectedIds.Select(x => doc.GetElement(x)).ToList();
+                    foreach (var e in selectedElements)
                     {
                         if (!e.IsValid())
                             continue;
 
                         if (e.Category is Category c)
                         {
+                            var cId = c.Id.GetValue();
+
+                            var s = settings.CategorySet.FirstOrDefault(x => x.Id != cId);
+                            if (s == null)
+                                continue;
+
                             CreateItem(doc, e, s, c.Id.GetValue(), vm);
                         }
                     }
                 }
-            }
-
-            if (vm.Elements.Count == 0)
-            {
-                return;
-            }
-
-            var byCategory = vm.Elements.GroupBy(e => e.CategoryId);
-            foreach (var group in byCategory)
-            {
-                var setting = settings.CategorySet.FirstOrDefault(x => x.Id == group.Key);
-                if (setting == null)
+                else
                 {
-                    continue;
+                    foreach (var s in settings.CategorySet)
+                    {
+                        var bic = (BuiltInCategory)s.Id;
+                        if (!Enum.IsDefined(typeof(BuiltInCategory), bic))
+                            continue;
+
+                        foreach (var e in new FilteredElementCollector(doc)
+                            .OfCategory(bic)
+                            .WhereElementIsNotElementType())
+                        {
+                            if (!e.IsValid())
+                                continue;
+
+                            if (e.Category is Category c)
+                            {
+                                CreateItem(doc, e, s, c.Id.GetValue(), vm);
+                            }
+                        }
+                    }
                 }
 
-                var sorted = ElementSortHelper.SortForNumbering(group);
-                var temp = group.ToList();
-                if (temp.Count == 0)
+                if (vm.Elements.Count == 0)
                 {
-                    continue;
+                    return;
                 }
 
-                var format = NumberFormat.FromPadding(setting.Padding);
-
-                uint number = 1;
-                foreach (var t in temp)
+                var byCategory = vm.Elements.GroupBy(e => e.CategoryId);
+                foreach (var group in byCategory)
                 {
-                    t.Number = number.ToString(format);
-                    number++;
+                    var setting = settings.CategorySet.FirstOrDefault(x => x.Id == group.Key);
+                    if (setting == null)
+                        continue;
+
+                    var sorted = group
+                        .OrderBy(e => e.LevelElevation)      // уровни: снизу вверх
+                        .ThenByDescending(e => e.Y)          // Y: "сверху вниз" на плане
+                        .ThenBy(e => e.X)                    // X: "слева направо" на плане
+                        .ThenBy(e => e.Id)                   // по Id элемента
+                        .ToList();
+
+                    if (sorted.Count == 0)
+                        continue;
+
+                    int number = 1;
+                    double? currentLevel = null;
+
+                    foreach (var t in sorted)
+                    {
+                        if (currentLevel != t.LevelElevation)
+                        {
+                            number = 1;
+                            currentLevel = t.LevelElevation;
+                        }
+
+                        t.Number = number++;
+                        t.Settings = setting;
+                    }
+                }
+            }
+            catch (Exception ex) 
+            {
+                hasErrors = true;
+                RevitMessage.ShowUnexceptedError(ex);
+            }
+            finally
+            {
+                stopwatch.Stop();
+                if (!hasErrors && vm.ShowTimeReport)
+                {
+                    RevitMessage.ShowTimeResult(stopwatch.Elapsed);
                 }
             }
         }
@@ -138,18 +170,7 @@ namespace Svrin.App.Commands.Renumber.EventHandlers
             var settingParameter = s.ParameterName;
             if (!string.IsNullOrWhiteSpace(settingParameter))
             {
-                Parameter parameter = e.LookupParameter(settingParameter);
-                if (parameter != null && parameter.HasValue)
-                {
-                    if (parameter.StorageType == StorageType.String)
-                    {
-                        parameterValue = parameter.AsString();
-                    }
-                    else
-                    {
-                        parameterValue = parameter.AsValueString();
-                    }
-                }
+                parameterValue = e.GetParameterValue(settingParameter);
             }
 
             var em = new ElementFromModel()
@@ -168,10 +189,7 @@ namespace Svrin.App.Commands.Renumber.EventHandlers
 
                 X = locationPoint.X,
                 Y = locationPoint.Y,
-                Z = locationPoint.Z,
-
-                Parameter = settingParameter,
-                Prefix = s.Prefix,
+                Z = locationPoint.Z
             };
 
             vm.Elements.Add(em);
