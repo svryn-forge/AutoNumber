@@ -1,7 +1,10 @@
 ﻿using Svrin.Core.Abstractions;
+using Svrin.Core.Properties;
 using Svrin.Wpf.Abstractions;
 using Svrin.Wpf.Commands;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Timers;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
@@ -25,23 +28,53 @@ namespace Svrin.Wpf.ViewModels
 
     public class NumberingVM : BaseViewModel
     {
-        private CancellationTokenSource? _searchCts;
         private readonly IWindowService _windowService;
         private readonly INumberingHandlers _handlers;
+        private string? _searchText;
+        private SearchFieldOption _selectedSearchField;
+        private CancellationTokenSource? _searchCts;
+        private bool _showTimeReport;
+        private ElementNumberingSettings? _settings;
 
         public ICommand CloseCommand => new RelayCommand((_) => _windowService?.Close());
-        public ICommand ApplyCommand => new RelayCommand((_) => _handlers.Apply(CurrentDocument, Elements));
+        public ICommand ApplyCommand => new RelayCommand((_) => _handlers.Apply(this));
         public ICommand LoadCommand => new RelayCommand((_) => _handlers.Load(this));
-        public ICommand ClearSearchCommand => new RelayCommand((_) => SearchText = string.Empty);
         public ICommand OpenSettingsCommand => new RelayCommand(OpenSettings);
-        public string? CurrentDocument { get; set; }
-
-        public ElementNumberingSettings? Settings { get; set; }
-        public ObservableCollection<ElementFromModel> Elements { get; } = [];
-
         public IReadOnlyList<SearchFieldOption> SearchFields { get; }
 
-        private SearchFieldOption _selectedSearchField;
+        public string? CurrentDocument { get; set; }
+        public bool ShowTimeReport { get => _showTimeReport; set => OnPropertyChanged(ref _showTimeReport, value); }
+        public ElementNumberingSettings? Settings
+        {
+            get => _settings;
+            set
+            {
+                if (!OnPropertyChanged(ref _settings, value))
+                    return;
+
+                if (_settings == null)
+                {
+                    Elements.Clear();
+                    return;
+                }
+
+                for (int i = 0; i < Elements.Count; i++)
+                {
+                    ElementFromModel? e = Elements[i];
+                    var s = _settings.CategorySet.FirstOrDefault(x => x.Id == e.CategoryId);
+                    if (s == null)
+                    {
+                        Elements.Remove(e);
+                        i--;
+                        continue;
+                    }
+
+                    e.Settings = s;
+                }
+            }
+        }
+        public ObservableCollection<ElementFromModel> Elements { get; } = [];
+
         public SearchFieldOption SelectedSearchField
         {
             get => _selectedSearchField;
@@ -51,7 +84,7 @@ namespace Svrin.Wpf.ViewModels
                     ApplyFilter();
             }
         }
-        private string? _searchText;
+        
         public string? SearchText
         {
             get => _searchText;
@@ -59,7 +92,24 @@ namespace Svrin.Wpf.ViewModels
             {
                 if (OnPropertyChanged(ref _searchText, value))
                 {
-                    ScheduleFilter();
+                    bool hasErrors = false;
+                    Stopwatch stopwatch = Stopwatch.StartNew();
+                    try
+                    {
+                        ScheduleFilter();
+                    }
+                    catch
+                    {
+                        hasErrors = true;
+                    }
+                    finally
+                    {
+                        stopwatch.Stop();
+                        if (!hasErrors && ShowTimeReport)
+                        {
+                            MessageBox.Show($"{Resources.TimeResult}: {stopwatch.Elapsed}", Resources.Report);
+                        }
+                    }
                 }
             }
         }
@@ -77,6 +127,11 @@ namespace Svrin.Wpf.ViewModels
                 new SearchFieldOption(SearchField.NewValue,     "Новое значение"),
             ];
             _selectedSearchField = SearchFields.First();
+        }
+
+        public void GetSettings(long categoryId)
+        {
+
         }
 
         private void ScheduleFilter()
@@ -126,10 +181,7 @@ namespace Svrin.Wpf.ViewModels
                     SearchField.Name => Contains(e.Name, value),
                     SearchField.Level => Contains(e.Level, value),
                     SearchField.CurrentValue => Contains(e.CurrentValue, value),
-                    SearchField.NewValue
-                        => Contains(e.Prefix, value)
-                        || Contains(e.Level, value)
-                        || Contains(e.Number, value),
+                    SearchField.NewValue => Contains(e.NewValue, value),
                     _ => false
                 };
 
