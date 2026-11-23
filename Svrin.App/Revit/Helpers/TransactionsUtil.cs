@@ -140,7 +140,7 @@ namespace Svrin.App.Revit.Helpers
             }
             return status;
         }
-        public static TransactionStatus StartsTransaction<T1, T2>(Document doc, string name, Action<T1, T2> action, T1 param1, T2 param2,
+        public static TransactionStatus StartsTransaction<T1, T2, T3>(Document doc, string name, Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3,
             out string? error,
             IFailuresPreprocessor? failuresPreprocessor = null)
         {
@@ -152,7 +152,7 @@ namespace Svrin.App.Revit.Helpers
                 {
                     AddFailuresPreprocessor(t, failuresPreprocessor);
                     t.Start();
-                    action(param1, param2);
+                    action(param1, param2, param3);
                     t.Commit();
                 }
                 catch (Exception ex)

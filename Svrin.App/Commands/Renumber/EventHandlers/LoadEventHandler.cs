@@ -128,7 +128,7 @@ namespace Svrin.App.Commands.Renumber.EventHandlers
             catch (Exception ex) 
             {
                 hasErrors = true;
-                RevitMessage.ShowUnexceptedError(ex);
+                RevitMessage.ShowUnexpectedError(ex);
             }
             finally
             {

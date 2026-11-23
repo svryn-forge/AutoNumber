@@ -23,7 +23,7 @@ namespace Svrin.App.Commands.Renumber
             }
             catch (Exception ex)
             {
-                RevitMessage.ShowUnexceptedError(ex);
+                RevitMessage.ShowUnexpectedError(ex);
                 return Result.Failed;
             }
 

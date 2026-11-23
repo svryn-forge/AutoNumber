@@ -4,15 +4,16 @@ namespace Svrin.Core.Abstractions
 {
     public class SettingCategory : BaseViewModel
     {
-        private bool isSelected;
-        private string prefix = string.Empty;
-        private string parameterName = string.Empty;
-        private int padding = 3;
+        private bool _isSelected;
+        private string _prefix = string.Empty;
+        private string _parameterName = string.Empty;
+        private string _template = "{Prefix}-{Уровень}-{N:000}";
+        private int _padding = 3;
 
         public bool IsSelected
         {
-            get => isSelected;
-            set => OnPropertyChanged(ref isSelected, value);
+            get => _isSelected;
+            set => OnPropertyChanged(ref _isSelected, value);
         }
 
         public long Id { get; set; } = -1L;
@@ -20,25 +21,25 @@ namespace Svrin.Core.Abstractions
 
         public string Prefix
         {
-            get => prefix;
-            set => OnPropertyChanged(ref prefix, value);
+            get => _prefix;
+            set => OnPropertyChanged(ref _prefix, value);
         }
 
         public string ParameterName
         {
-            get => parameterName;
-            set => OnPropertyChanged(ref parameterName, value);
+            get => _parameterName;
+            set => OnPropertyChanged(ref _parameterName, value);
         }
 
         public int Padding
         {
-            get => padding;
+            get => _padding;
             set
             {
                 if (value < 1)
                     value = 1;
 
-                if (!OnPropertyChanged(ref padding, value))
+                if (!OnPropertyChanged(ref _padding, value))
                     return;
 
                 StringBuilder sb = new StringBuilder("{Prefix}-{Уровень}-{N:");
@@ -50,8 +51,6 @@ namespace Svrin.Core.Abstractions
                 Template = sb.ToString();
             }
         }
-
-        private string _template = "{Prefix}-{Уровень}-{N:000}";
 
         public string Template
         {

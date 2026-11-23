@@ -129,11 +129,6 @@ namespace Svrin.Wpf.ViewModels
             _selectedSearchField = SearchFields.First();
         }
 
-        public void GetSettings(long categoryId)
-        {
-
-        }
-
         private void ScheduleFilter()
         {
             if (_searchCts != null)

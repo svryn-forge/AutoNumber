@@ -13,7 +13,7 @@ namespace Svrin.App
     {
         internal static IServiceProvider Services { get; private set; } = null!;
 
-        private static readonly HashSet<int> _supportedVersions =
+        private static readonly IReadOnlyCollection<int> _supportedVersions =
         [
             2022, 2024, 2025
         ];
@@ -67,7 +67,7 @@ namespace Svrin.App
             return Result.Succeeded;
         }
 
-        public static void CreateRibbon(UIControlledApplication application, HashSet<int> supportedVersions)
+        public static void CreateRibbon(UIControlledApplication application, IReadOnlyCollection<int> supportedVersions)
         {
             var app = application.ControlledApplication;
 

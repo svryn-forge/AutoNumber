@@ -6,12 +6,12 @@ namespace Svrin.App.Commands.Renumber.EventHandlers
     internal class NumberingHandlers : INumberingHandlers
     {
         private readonly LoadEventHandler _loadEventHandler;
-        private readonly ApplyEventHandler _aplyEventHandler;
+        private readonly ApplyEventHandler _applyEventHandler;
         private readonly ChangeSettingsHandler _changeSettings;
         public NumberingHandlers()
         {
             _loadEventHandler = new LoadEventHandler();
-            _aplyEventHandler = new ApplyEventHandler();
+            _applyEventHandler = new ApplyEventHandler();
             _changeSettings = new ChangeSettingsHandler();
         }
 
@@ -24,7 +24,7 @@ namespace Svrin.App.Commands.Renumber.EventHandlers
         public void Apply(object obj)
         {
             if (obj is NumberingVM vm)
-                _aplyEventHandler.Raise(vm);
+                _applyEventHandler.Raise(vm);
         }
 
         public void ChangeSettings(object obj)

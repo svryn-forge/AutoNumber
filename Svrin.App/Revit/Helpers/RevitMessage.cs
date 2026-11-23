@@ -26,7 +26,7 @@ namespace Svrin.App.Revit.Helpers
                 instruction,
                 expandedContent);
 
-        public static void ShowUnexceptedError(Exception ex) =>
+        public static void ShowUnexpectedError(Exception ex) =>
             ShowDialog(
                 Resources.Error,
                 ex.Message,

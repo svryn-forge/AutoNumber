@@ -15,8 +15,7 @@ namespace Svrin.App.Commands.Renumber.EventHandlers
     internal class ApplyEventHandler : RvtEventHandler<NumberingVM?>
     {
         const string ErrorText = "В процессе заполнения параметров возникла ошибка.";
-        private NumberingResult? _result;
-
+        
         public override void Execute(UIApplication app, NumberingVM? vm)
         {
             if (vm == null)
@@ -80,7 +79,7 @@ namespace Svrin.App.Commands.Renumber.EventHandlers
                     fromModels = collection;
                 }
 
-                _result = new NumberingResult()
+                var result = new NumberingResult()
                 {
                     Total = fromModels.Count
                 };
@@ -91,6 +90,7 @@ namespace Svrin.App.Commands.Renumber.EventHandlers
                     "Заполнение параметра",
                     TransactionStart,
                     fromModels,
+                    result,
                     doc,
                     out var error,
                     preprocessor);
@@ -99,16 +99,16 @@ namespace Svrin.App.Commands.Renumber.EventHandlers
                 {
                     if (status != TransactionStatus.Committed)
                     {
-                        _result.Details.Add($"Транзакция завершилась со статусом {status}.");
+                        result.Details.Add($"Транзакция завершилась со статусом {status}.");
                     }
                     if (preprocessor.Warnings.Count > 0)
                     {
-                        _result.Details.Add("Preprocessor Warnings");
-                        _result.Details.AddRange(preprocessor.Warnings);
-                        _result.Details.Add(Environment.NewLine);
+                        result.Details.Add("Preprocessor Warnings");
+                        result.Details.AddRange(preprocessor.Warnings);
+                        result.Details.Add(Environment.NewLine);
                     }
 
-                    NumberingResultLogger.ShowResult(_result, doc.Application.VersionNumber);
+                    NumberingResultLogger.ShowResult(result, doc.Application.VersionNumber);
                 }
                 else
                 {
@@ -118,7 +118,7 @@ namespace Svrin.App.Commands.Renumber.EventHandlers
             catch (Exception ex)
             {
                 hasErrors = true;
-                RevitMessage.ShowUnexceptedError(ex);
+                RevitMessage.ShowUnexpectedError(ex);
             }
             finally
             {
@@ -130,72 +130,72 @@ namespace Svrin.App.Commands.Renumber.EventHandlers
             }
         }
         
-        private void TransactionStart(IReadOnlyCollection<ElementFromModel> fromModels, Document doc)
+        private void TransactionStart(IReadOnlyCollection<ElementFromModel> fromModels, NumberingResult result, Document doc)
         {
-            if (_result == null) return;
+            if (result == null) return;
 
             foreach (var item in fromModels)
             {
                 var element = doc.GetElement(item.Id.GetElementId());
                 if (!element.IsValid())
                 {
-                    _result.Skipped++;
-                    _result.Details.Add($"{item.Name} (ID: {item.Id}) — элемент не найден.");
+                    result.Skipped++;
+                    result.Details.Add($"{item.Name} (ID: {item.Id}) — элемент не найден.");
                     continue;
                 }
 
                 if (!string.Equals(item.UniqueId, element.UniqueId, StringComparison.InvariantCulture))
                 {
-                    _result.Skipped++;
-                    _result.Details.Add($"{item.Name} (ID: {item.Id}) — элемент был заменён.");
+                    result.Skipped++;
+                    result.Details.Add($"{item.Name} (ID: {item.Id}) — элемент был заменён.");
                     continue;
                 }
 
                 var settings = item.Settings;
                 if (settings == null)
                 {
-                    _result.Skipped++;
-                    _result.Details.Add($"{item.Name} — без настроек.");
+                    result.Skipped++;
+                    result.Details.Add($"{item.Name} — без настроек.");
                     continue;
                 }
                 var parameterName = settings.ParameterName;
                 if (string.IsNullOrWhiteSpace(parameterName))
                 {
-                    _result.Skipped++;
-                    _result.Details.Add($"{item.Name} — параметр в настройках не назначен.");
+                    result.Skipped++;
+                    result.Details.Add($"{item.Name} — параметр в настройках не назначен.");
                     continue;
                 }
                 var parameter = element.LookupParameter(parameterName);
                 if (parameter == null)
                 {
-                    _result.Skipped++;
-                    _result.Details.Add($"{item.Name} — параметр не найден.");
+                    result.Skipped++;
+                    result.Details.Add($"{item.Name} — параметр не найден.");
                     continue;
                 }
 
                 if (parameter.IsReadOnly)
                 {
-                    _result.Skipped++;
-                    _result.Details.Add($"{item.Name} — параметр доступен только для чтения.");
+                    result.Skipped++;
+                    result.Details.Add($"{item.Name} — параметр доступен только для чтения.");
                     continue;
                 }
 
                 if (parameter.StorageType != StorageType.String)
                 {
-                    _result.Skipped++;
-                    _result.Details.Add($"{item.Name} — неподдерживаемый тип параметра.");
+                    result.Skipped++;
+                    result.Details.Add($"{item.Name} — неподдерживаемый тип параметра.");
                     continue;
                 }
 
                 if (parameter.Set(item.NewValue))
                 {
                     item.CurrentValue = item.NewValue;
-                    _result.Success++;
+                    result.Success++;
                 }
                 else
                 {
-                    _result.Skipped++;
-                    _result.Details.Add($"{item.Name} (ID: {item.Id}) — не удалось изменить значение параметра.");
+                    result.Skipped++;
+                    result.Details.Add($"{item.Name} (ID: {item.Id}) — не удалось изменить значение параметра.");
                 }
             }
         }
