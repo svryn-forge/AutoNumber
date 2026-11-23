@@ -18,5 +18,6 @@
   </Folder>
   <Project Path="Svrin.App/Svrin.App.csproj" />
   <Project Path="Svrin.Core/Svrin.Core.csproj" />
+  <Project Path="Svrin.Tests/Svrin.Tests.csproj" Id="a02905d2-a32e-4219-999c-25922f15c55d" />
   <Project Path="Svrin.Wpf/Svrin.Wpf.csproj" />
 </Solution>

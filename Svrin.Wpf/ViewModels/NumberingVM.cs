@@ -4,28 +4,12 @@ using Svrin.Wpf.Abstractions;
 using Svrin.Wpf.Commands;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Timers;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
 
 namespace Svrin.Wpf.ViewModels
 {
-    public enum SearchField
-    {
-        Id,
-        Name,
-        Level,
-        CurrentValue,
-        NewValue
-    }
-
-    public sealed class SearchFieldOption(SearchField field, string title)
-    {
-        public SearchField Field { get; } = field;
-        public string Title { get; } = title;
-    }
-
     public class NumberingVM : BaseViewModel
     {
         private readonly IWindowService _windowService;

@@ -27,5 +27,8 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\Svrin.Core\Svrin.Core.csproj" />
 	</ItemGroup>
-	
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="Svrin.Tests" />
+	</ItemGroup>
 </Project>

@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Svrin.Core.Helpers
 {
-    internal static class TemplateFormatter
+    public static class TemplateFormatter
     {
         private static readonly Regex PlaceholderRegex = new Regex(@"\{([^{}]+)\}", RegexOptions.Compiled);
 
