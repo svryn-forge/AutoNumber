@@ -8,7 +8,8 @@
 # Порядок сборки: Core → Wpf → App
 #
 
-$root = "D:\AutoNumber"
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path   # ..\AutoNumber\Build
+$root      = Split-Path -Parent $scriptDir                     # ..\AutoNumber
 
 $versions = @(
     "r2022",
