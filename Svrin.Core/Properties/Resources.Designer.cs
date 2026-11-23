@@ -161,6 +161,24 @@ namespace Svrin.Core.Properties {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Отчет.
+        /// </summary>
+        public static string Report {
+            get {
+                return ResourceManager.GetString("Report", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Время выполнения.
+        /// </summary>
+        public static string TimeResult {
+            get {
+                return ResourceManager.GetString("TimeResult", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Необработанное исключение.
         ///Передайте эту информацию разработчику..
         /// </summary>

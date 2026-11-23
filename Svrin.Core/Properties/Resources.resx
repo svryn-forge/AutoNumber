@@ -151,6 +151,12 @@
   <data name="PanelAlreadyExistInstruction" xml:space="preserve">
     <value>Instruction</value>
   </data>
+  <data name="Report" xml:space="preserve">
+    <value>Отчет</value>
+  </data>
+  <data name="TimeResult" xml:space="preserve">
+    <value>Время выполнения</value>
+  </data>
   <data name="UnexpectedException" xml:space="preserve">
     <value>Необработанное исключение.
 Передайте эту информацию разработчику.</value>
