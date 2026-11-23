@@ -1,0 +1,8 @@
+﻿<!-- RvtInstallPath.props -->
+<Project>
+	<PropertyGroup>
+		<Revit2022Path>C:\Program Files\Autodesk\Revit 2022</Revit2022Path>
+		<Revit2024Path>C:\Program Files\Autodesk\Revit 2024</Revit2024Path>
+		<Revit2025Path>D:\Program Files\Autodesk\Revit 2025</Revit2025Path>
+	</PropertyGroup>
+</Project>

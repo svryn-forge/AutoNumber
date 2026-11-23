@@ -1,0 +1,40 @@
+﻿<!-- RvtVersions.props -->
+<Project>
+	<Choose>
+		<When Condition="'$(Configuration)' == 'r2022'">
+			<PropertyGroup>
+				<RevitVersion>2022</RevitVersion>
+				<TargetFramework>net48</TargetFramework>
+				<RevitApiPath>$(Revit2022Path)</RevitApiPath>
+			</PropertyGroup>
+		</When>
+		<When Condition="'$(Configuration)' == 'r2024'">
+			<PropertyGroup>
+				<RevitVersion>2024</RevitVersion>
+				<TargetFramework>net48</TargetFramework>
+				<RevitApiPath>$(Revit2024Path)</RevitApiPath>
+			</PropertyGroup>
+		</When>
+		<When Condition="'$(Configuration)' == 'r2025'">
+			<PropertyGroup>
+				<RevitVersion>2025</RevitVersion>
+				<TargetFramework>net8.0-windows</TargetFramework>
+				<RevitApiPath>$(Revit2025Path)</RevitApiPath>
+			</PropertyGroup>
+		</When>
+	</Choose>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+		<Reference Include="System.Net.Http" />
+	</ItemGroup>
+
+	<PropertyGroup Condition="'$(Configuration)' == 'r2022'">
+		<DefineConstants>$(DefineConstants);R2022</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)' == 'r2024'">
+		<DefineConstants>$(DefineConstants);R2024</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)' == 'r2025'">
+		<DefineConstants>$(DefineConstants);R2025</DefineConstants>
+	</PropertyGroup>
+</Project>

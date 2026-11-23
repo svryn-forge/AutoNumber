@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Library</OutputType>
+		<UseWPF>true</UseWPF>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+		<SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+		<Configurations>r2022;r2024;r2025</Configurations>
+	</PropertyGroup>
+
+	<Import Project="$(MSBuildThisFileDirectory)..\Build\RvtVersions.props" />
+
+	<ItemGroup Condition="'$(TargetFramework)' != 'net48'">
+		<PackageReference Include="System.Drawing.Common" Version="10.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Remove="obj\**\*.cs" />
+		<EmbeddedResource Remove="obj\**\*" />
+		<None Remove="obj\**\*" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Svrin.Core\Svrin.Core.csproj" />
+	</ItemGroup>
+	
+</Project>
