@@ -5,61 +5,54 @@ namespace Svrin.Core.Helpers
 {
     internal static class TemplateFormatter
     {
-        private static readonly Regex PlaceholderRegex = new(@"\{(\w+)(?::([^}]+))?\}", RegexOptions.Compiled);
+        private static readonly Regex PlaceholderRegex = new Regex(@"\{([^{}]+)\}", RegexOptions.Compiled);
 
-        public static string? FormatTemplate(string template, string level, string number, string prefix, out string? error)
+        public static string? ValidateValue(string template, string value)
         {
-            error = null;
-            if (string.IsNullOrEmpty(template)) return string.Empty;
+            var pattern = new StringBuilder();
+            var position = 0;
 
-            var sb = new StringBuilder();
-            int pos = 0;
-
-            foreach (Match m in PlaceholderRegex.Matches(template))
+            foreach (Match match in PlaceholderRegex.Matches(template))
             {
-                sb.Append(template, pos, m.Index - pos);
-                pos = m.Index + m.Length;
+                pattern.Append(Regex.Escape(
+                    template.Substring(position, match.Index - position)));
 
-                var name = m.Groups[1].Value;
-                var format = m.Groups[2].Success ? m.Groups[2].Value : null;
+                var parts = match.Groups[1].Value.Split(':');
+                var name = parts[0];
 
-                string? value = name switch
+                switch (name)
                 {
-                    "Уровень" or "Level" => level,
-                    "N" or "Number" => number,
-                    "Д" or "Prefix" => prefix,
-                    _ => null
-                };
+                    case "Prefix":
+                        pattern.Append(@"\p{L}");
+                        break;
 
-                if (value == null)
-                {
-                    error = $"Неизвестный плейсхолдер {{{name}}}.";
-                    return null;
+                    case "Уровень":
+                    case "Level":
+                        pattern.Append(".+?");
+                        break;
+
+                    case "N":
+                    case "Number":
+                        if (parts.Length == 2 && Regex.IsMatch(parts[1], @"^0+$"))
+                            pattern.Append(@"\d{" + parts[1].Length + "}");
+                        else
+                            pattern.Append(@"\d+");
+                        break;
+
+                    default:
+                        pattern.Append(Regex.Escape(match.Value));
+                        break;
                 }
 
-                if (!string.IsNullOrEmpty(format) && int.TryParse(value, out var intVal))
-                    sb.Append(intVal.ToString(format));
-                else
-                    sb.Append(value);
+                position = match.Index + match.Length;
             }
 
-            sb.Append(template, pos, template.Length - pos);
+            pattern.Append(Regex.Escape(
+                template.Substring(position)));
 
-            return sb.ToString();
-        }
-
-        public static string? ValidateTemplate(string template, string level, string number, string prefix)
-        {
-            if (string.IsNullOrWhiteSpace(template))
-                return "Шаблон пуст.";
-
-            FormatTemplate(template, level, number, prefix, out var error);
-            if (error != null) return error;
-
-            if (template.Count(c => c == '{') != template.Count(c => c == '}'))
-                return "Непарные скобки в шаблоне.";
-
-            return null;
+            return Regex.IsMatch(value ?? string.Empty, "^" + pattern + "$")
+                ? null
+                : "Значение не соответствует шаблону.";
         }
     }
 }
