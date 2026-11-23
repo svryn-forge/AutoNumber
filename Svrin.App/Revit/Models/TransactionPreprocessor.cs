@@ -22,10 +22,8 @@ namespace Svrin.App.Revit.Models
                     .GetFailingElementIds()
                     .Select(id => id.GetValue().ToString());
 
-                Warnings.Add(
-                    $"{description}. ID элементов: {string.Join(", ", elementIds)}");
+                Warnings.Add($"{description}. ID элементов: {string.Join(", ", elementIds)}");
 
-                // Убираем предупреждение из стандартного интерфейса Revit
                 failuresAccessor.DeleteWarning(failure);
             }
 
