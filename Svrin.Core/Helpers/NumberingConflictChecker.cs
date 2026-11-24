@@ -20,7 +20,9 @@ namespace Svrin.Core.Helpers
                 {
                     foreach (var target in items)
                     {
-                        if (ReferenceEquals(source, target)) continue;
+                        if (source.CategoryId != target.CategoryId) continue;
+                        if (source.Id == target.Id) continue;
+                        if (source.NewValue != target.NewValue) continue;
 
                         conflicts.Add(new NumberingConflict
                         {

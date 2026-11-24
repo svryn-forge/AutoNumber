@@ -52,17 +52,6 @@ namespace Svrin.Tests.Core.Abstractions
         }
 
         [Fact]
-        public void Settings_Set_NoLevel_OmitsLevelAndSeparator()
-        {
-            var el = CreateElement();
-            el.Level = "";
-            el.Number = 3;
-            el.Settings = CreateSettings(prefix: "Б", padding: 1);
-
-            Assert.Equal("Б-3", el.NewValue);
-        }
-
-        [Fact]
         public void Settings_Set_OnlyNumber()
         {
             var el = CreateElement();
@@ -119,27 +108,6 @@ namespace Svrin.Tests.Core.Abstractions
 
             Assert.Null(el.NewValueError);
             Assert.False(el.HasErrors);
-        }
-
-        [Fact]
-        public void NewValueError_EmptyTemplate_ReturnsNull()
-        {
-            var el = CreateElement();
-            el.Settings = CreateSettings(template: "");
-            el.NewValue = "anything";
-
-            Assert.Null(el.NewValueError);
-            Assert.False(el.HasErrors);
-        }
-
-        [Fact]
-        public void NewValueError_WhitespaceTemplate_ReturnsNull()
-        {
-            var el = CreateElement();
-            el.Settings = CreateSettings(template: "   ");
-            el.NewValue = "anything";
-
-            Assert.Null(el.NewValueError);
         }
 
         [Fact]

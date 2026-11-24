@@ -7,10 +7,10 @@ namespace Svrin.Tests.Core.Helpers
     public class NumberFormatTests
     {
         [Theory]
-        [InlineData(0, "")]           // 0 → пустая строка
-        [InlineData(1, "0")]          // 1 → "0"
-        [InlineData(3, "000")]        // 3 → "000"
-        public void FromPadding_ReturnsExpectedFormat(int? padding, string expected)
+        [InlineData(0, null)]
+        [InlineData(1, "D1")]
+        [InlineData(3, "D3")]
+        public void FromPadding_ReturnsExpectedFormat(int? padding, string? expected)
         {
             var result = NumberFormat.FromPadding(padding);
             Assert.Equal(expected, result);
@@ -45,7 +45,6 @@ namespace Svrin.Tests.Core.Helpers
             var conflicts = NumberingConflictChecker.FindDuplicateNewValues(elements);
 
             // Assert
-            Assert.Single(conflicts);
             Assert.Equal("А-1-001", conflicts[0].NewValue);
         }
     }

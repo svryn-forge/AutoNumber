@@ -39,8 +39,8 @@ namespace Svrin.Core.Abstractions
                 if (value < 1)
                     value = 1;
 
-                if (value > 9)
-                    value = 9;
+                if (value > 10)
+                    value = 10;
 
                 if (!OnPropertyChanged(ref _padding, value))
                     return;

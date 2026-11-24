@@ -5,7 +5,7 @@ namespace Svrin.Core.Helpers
 {
     public static class TemplateFormatter
     {
-        private static readonly Regex PlaceholderRegex = new Regex(@"\{([^{}]+)\}", RegexOptions.Compiled);
+        private static readonly Regex PlaceholderRegex = new Regex(@"\{([^{}:]+)(?::([^{}]+))?\}", RegexOptions.Compiled);
 
         public static string? ValidateValue(string template, string value)
         {
@@ -17,8 +17,10 @@ namespace Svrin.Core.Helpers
                 pattern.Append(Regex.Escape(
                     template.Substring(position, match.Index - position)));
 
-                var parts = match.Groups[1].Value.Split(':');
-                var name = parts[0];
+                var name = match.Groups[1].Value;                        // "N" / "Number" / ...
+                var format = match.Groups[2].Success                       // "0", "00" или null
+                    ? match.Groups[2].Value
+                    : null;
 
                 switch (name)
                 {
@@ -33,8 +35,8 @@ namespace Svrin.Core.Helpers
 
                     case "N":
                     case "Number":
-                        if (parts.Length == 2 && Regex.IsMatch(parts[1], @"^0+$"))
-                            pattern.Append(@"\d{" + parts[1].Length + "}");
+                        if (format != null && Regex.IsMatch(format, @"^0+$"))
+                            pattern.Append(@"\d{" + format.Length + "}");
                         else
                             pattern.Append(@"\d+");
                         break;

@@ -94,18 +94,35 @@ namespace Svrin.Tests.Core.Helpers
         }
 
         [Theory]
-        [InlineData("{N}", "1")]        // \d+
+        [InlineData("{N}", "1")]
         [InlineData("{N}", "12345")]
-        [InlineData("{N:0}", "1")]      // \d{1}
-        [InlineData("{N:0}", "12")]     // \d{1} → невалидно
-        [InlineData("{N:00}", "12")]    // \d{2}
-        [InlineData("{N:00}", "1")]     // \d{2} → невалидно
-        public void NumberFormat_Length(string template, string value)
+        [InlineData("{N}", "0")]               // formatter про знак не знает — формат ок
+        [InlineData("{N:0}", "1")]
+        [InlineData("{N:00}", "12")]
+        [InlineData("{N:000}", "123")]
+        [InlineData("{N:000}", "007")]         // ведущие нули — ок
+        [InlineData("{N:000}", "000")]         // все нули — тоже ок для formatter
+        public void NumberFormat_Valid(string template, string value)
         {
-            var expected = template.Contains(":0") && value.Length != template.Split(':')[1].Length
-                ? "Значение не соответствует шаблону."
-                : null;
-            Assert.Equal(expected, TemplateFormatter.ValidateValue(template, value));
+            Assert.Null(TemplateFormatter.ValidateValue(template, value));
+        }
+
+        [Theory]
+        [InlineData("{N:0}", "12")]            // \d{1}
+        [InlineData("{N:0}", "")]
+        [InlineData("{N:00}", "1")]            // \d{2}
+        [InlineData("{N:00}", "123")]          // \d{2} — раньше проходило из-за бага
+        [InlineData("{N:000}", "12")]
+        [InlineData("{N:000}", "1234")]
+        [InlineData("{N}", "")]                // \d+ не матчит пусто
+        [InlineData("{N}", "-1")]              // минус не цифра → формат не тот
+        [InlineData("{N}", "1.5")]
+        [InlineData("{N}", " 1")]
+        [InlineData("{N}", "1 ")]
+        public void NumberFormat_Invalid(string template, string value)
+        {
+            Assert.Equal("Значение не соответствует шаблону.",
+                TemplateFormatter.ValidateValue(template, value));
         }
 
         /// <summary>

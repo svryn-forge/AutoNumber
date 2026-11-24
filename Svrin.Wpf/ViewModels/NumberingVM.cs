@@ -33,14 +33,14 @@ namespace Svrin.Wpf.ViewModels
             get => _settings;
             set
             {
+                if (value == null)
+                {
+                    Elements.Clear();
+                }
+
                 if (!OnPropertyChanged(ref _settings, value))
                     return;
 
-                if (_settings == null)
-                {
-                    Elements.Clear();
-                    return;
-                }
 
                 for (int i = 0; i < Elements.Count; i++)
                 {
