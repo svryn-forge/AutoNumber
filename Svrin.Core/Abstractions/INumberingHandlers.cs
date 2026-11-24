@@ -3,7 +3,7 @@
     public interface INumberingHandlers
     {
         void Load(object obj);
-        void Apply(string? title, IReadOnlyCollection<ElementFromModel>? elements);
+        void Apply(object obj);
         void ChangeSettings(object obj);
     }
 }

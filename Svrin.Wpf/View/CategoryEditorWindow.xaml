@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Svrin.Wpf.View"
         mc:Ignorable="d"
-        Title="CategoryEditorWindow" Height="450" Width="800">
+        Title="CategoryEditorWindow" Height="450" Width="800"
+        WindowStartupLocation="CenterScreen">
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -31,30 +32,20 @@
                                     Binding="{Binding Id, Mode=OneWay}"
                                     IsReadOnly="True"
                                     Width="60"/>
-                <DataGridTextColumn Header="Name"
+                <DataGridTextColumn Header="Наименование"
                                     Binding="{Binding Name, Mode=OneWay}"
                                     IsReadOnly="True"
                                     Width="*"/>
-                <DataGridTextColumn Header="ParameterName"
+                <DataGridTextColumn Header="Параметр"
                                     Binding="{Binding ParameterName, UpdateSourceTrigger=PropertyChanged}"
                                     Width="*"/>
-                <DataGridTextColumn Header="Prefix"
+                <DataGridTextColumn Header="Префикс"
                                     Binding="{Binding Prefix, UpdateSourceTrigger=PropertyChanged}"
                                     Width="120"/>
-                <DataGridTextColumn Header="Padding"
+                <DataGridTextColumn Header="Разрядность"
                                     Binding="{Binding Padding, UpdateSourceTrigger=PropertyChanged}"
                                     Width="80"/>
-                <DataGridTemplateColumn Width="90">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Button Content="Удалить"
-                                    Width="80"
-                                    Command="{Binding DataContext.RemoveCommand,
-                                              RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                    CommandParameter="{Binding}"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+
             </DataGrid.Columns>
         </DataGrid>
 

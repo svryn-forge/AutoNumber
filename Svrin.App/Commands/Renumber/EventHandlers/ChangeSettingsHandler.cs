@@ -2,10 +2,12 @@
 using Autodesk.Revit.UI;
 using Svrin.App.Revit;
 using Svrin.App.Revit.Extensions;
+using Svrin.App.Revit.Helpers;
 using Svrin.Core.Abstractions;
 using Svrin.Core.Providers;
 using Svrin.Wpf.View;
 using Svrin.Wpf.ViewModels;
+using System.Diagnostics;
 
 namespace Svrin.App.Commands.Renumber.EventHandlers
 {
@@ -15,49 +17,83 @@ namespace Svrin.App.Commands.Renumber.EventHandlers
         {
             if (vm == null)
                 return;
-            if (!app.IsValid())
-                return;
+            var vmSettings = vm.Settings;
+            if (vmSettings == null)
+                    return;
 
-            var uidoc = app.ActiveUIDocument;
-            var doc = uidoc.Document;
-
-            var categories = doc.Settings.Categories.OfType<Category>().Where(c => c.AllowsBoundParameters).Select(x => new SettingCategory()
-            { 
-                Id = x.Id.GetValue(),
-                Name = x.Name
-            });
-
-            var settings = JsonSetting<ElementNumberingSettings>.Open();
-            HashSet<long> existingIds = [];
-            foreach (var s in settings.CategorySet)
+            bool hasErrors = false;
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            try
             {
-                existingIds.Add(s.Id);
-                s.IsSelected = true;
-            }
+                if (!app.IsValid())
+                    return;
 
-            foreach (var cat in categories)
-            {
-                if (!existingIds.Contains(cat.Id))
+                var uidoc = app.ActiveUIDocument;
+                if (!uidoc.IsValid())
+                    return;
+
+                var doc = uidoc.Document;
+                if (!doc.IsValid())
+                    return;
+
+                var categories = doc.Settings.Categories.OfType<Category>().Where(c => c.AllowsBoundParameters).Select(x => new SettingCategory()
                 {
-                    settings.CategorySet.Add(cat);
+                    Id = x.Id.GetValue(),
+                    Name = x.Name
+                });
+
+                var settings = JsonSetting<ElementNumberingSettings>.Open();
+                HashSet<long> existingIds = [];
+
+                Dictionary<long, SettingCategory> d = [];
+
+                settings.CategorySet.Clear();
+
+                foreach (var s in vmSettings.CategorySet)
+                {
+                    s.IsSelected = true;
+                    d.Add(s.Id, s);
+                }
+
+                foreach (var cat in categories)
+                {
+                    if (!d.TryGetValue(cat.Id, out var s))
+                    {
+                        s = cat;
+                    }
+
+                    settings.CategorySet.Add(s);
+                }
+
+                var editorVm = new CategoryEditorVM(settings.CategorySet);
+
+                var window = new CategoryEditorWindow()
+                {
+                    DataContext = editorVm
+                };
+
+                if (window.ShowDialog() == true && editorVm.Result != null)
+                {
+                    settings.CategorySet.Clear();
+                    settings.CategorySet.AddRange(editorVm.Result.Where(x => x.IsSelected));
+
+                    JsonSetting<ElementNumberingSettings>.Save(settings);
+
+                    vm.Settings = settings;
                 }
             }
-
-            var editorVm = new CategoryEditorVM(settings.CategorySet);
-
-            var window = new CategoryEditorWindow()
+            catch (Exception ex)
             {
-                DataContext = editorVm
-            };
-
-            if (window.ShowDialog() == true && editorVm.Result != null)
+                hasErrors = true;
+                RevitMessage.ShowUnexpectedError(ex);
+            }
+            finally
             {
-                settings.CategorySet.Clear();
-                settings.CategorySet.AddRange(editorVm.Result.Where(x => x.IsSelected));
-
-                JsonSetting<ElementNumberingSettings>.Save(settings);
-
-                vm.Settings = settings;
+                stopwatch.Stop();
+                if (!hasErrors && vm.ShowTimeReport)
+                {
+                    RevitMessage.ShowTimeResult(stopwatch.Elapsed);
+                }
             }
         }
     }

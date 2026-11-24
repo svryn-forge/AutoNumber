@@ -1,91 +1,62 @@
 ﻿using Svrin.Core.Helpers;
+using System.Collections;
+using System.ComponentModel;
 using System.Text;
 
 namespace Svrin.Core.Abstractions
 {
-    public class ElementFromModel : BaseViewModel
+    public class ElementFromModel : BaseViewModel, INotifyDataErrorInfo
     {
         private readonly StringBuilder _stringBuilder = new();
-        private bool isChecked;
-        private string prefix = string.Empty;
-        private string number = string.Empty;
-        private string template = "Д-{Уровень}-{N:000}";
-        public string Template
-        {
-            get => template;
-            set
-            {
-                if (!OnPropertyChanged(ref template, value)) return;
-                OnPropertyChanged(nameof(NewValue));
-                OnPropertyChanged(nameof(TemplateError));
-            }
-        }
-        public string? TemplateError => TemplateFormatter.ValidateTemplate(Template, Level, Number, Prefix);
+        private string _newValue = string.Empty;
+        private bool _isChecked;
+        private int _number;
+        private string _currentValue = string.Empty;
+        private SettingCategory? _settings;
 
-        public bool IsChecked { get => isChecked; set => OnPropertyChanged(ref isChecked, value); }
+        public bool IsChecked { get => _isChecked; set => OnPropertyChanged(ref _isChecked, value); }
         public long Id { get; set; }
         public long CategoryId { get; set; }
         public string UniqueId { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string Level { get; set; } = string.Empty;
         public double LevelElevation { get; set; }
-        public string Prefix
+
+        public SettingCategory? Settings
         {
-            get => prefix;
+            get => _settings;
             set
             {
-                if (!OnPropertyChanged(ref prefix, value))
+                OnPropertyChanged(ref _settings, value);
+                if (_settings == null)
                     return;
-                UpdateNewValue();
-            }
-        }
-        public string Number
-        {
-            get => number;
-            set
-            {
-                if (!OnPropertyChanged(ref number, value))
-                    return;
+
                 UpdateNewValue();
             }
         }
 
-        public string CurrentValue { get; set; } = string.Empty;
+        public int Number
+        {
+            get => _number;
+            set => OnPropertyChanged(ref _number, value);
+        }
 
-        private string? _newValueCache;
+        public string CurrentValue { get => _currentValue; set => OnPropertyChanged(ref _currentValue, value); }
         public string NewValue
         {
-            get
+            get => _newValue;
+            set
             {
-                if (_newValueCache != null) return _newValueCache;
+                if (!OnPropertyChanged(ref _newValue, value))
+                    return;
 
-                _stringBuilder.Clear();
+                OnPropertyChanged(nameof(NewValueError));
+                OnPropertyChanged(nameof(HasErrors));
 
-                AddValue(Prefix);
-                AddSeparator();
-                AddValue(Level);
-                AddSeparator();
-                AddValue(Number);
-
-                return _newValueCache = _stringBuilder.ToString();
-
-                void AddValue(string value)
-                {
-                    if (string.IsNullOrWhiteSpace(value)) return;
-                    _stringBuilder.Append(value);
-                }
-                void AddSeparator()
-                {
-                    if (_stringBuilder.Length > 0)
-                        _stringBuilder.Append('-');
-                }
+                ErrorsChanged?.Invoke(
+                    this,
+                    new DataErrorsChangedEventArgs(nameof(NewValue)));
             }
-        }
-
-        private void UpdateNewValue()
-        {
-            _newValueCache = null;
-            OnPropertyChanged(nameof(NewValue));
         }
 
         public bool IsEquals => string.Equals(CurrentValue, NewValue, StringComparison.InvariantCultureIgnoreCase);
@@ -94,8 +65,55 @@ namespace Svrin.Core.Abstractions
         public double Y { get; set; }
         public double Z { get; set; }
 
-        public string Parameter { get; set; } = string.Empty;
+        public bool HasErrors => !string.IsNullOrEmpty(NewValueError);
+        public string? NewValueError => _settings == null || string.IsNullOrWhiteSpace(_settings.Template)
+            ? null
+            : TemplateFormatter.ValidateValue(_settings.Template!, NewValue, _settings.Prefix, Level);
 
+        public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
+
+        public IEnumerable GetErrors(string? propertyName)
+        {
+            return propertyName switch
+            {
+                nameof(NewValue) when NewValueError is not null
+                    => new[] { NewValueError },
+
+                _ => Array.Empty<string>()
+            };
+        }
+
+        private void UpdateNewValue()
+        {
+            if (_settings == null)
+                return;
+
+            _stringBuilder.Clear();
+
+            AddValue(_settings.Prefix);
+            AddSeparator();
+            AddValue(Level);
+            AddSeparator();
+
+            var format = NumberFormat.FromPadding(_settings.Padding);
+            AddValue(Number.ToString(format));
+            
+            NewValue = _stringBuilder.ToString();
+
+            void AddValue(string value)
+            {
+                if (!string.IsNullOrWhiteSpace(value))
+                    _stringBuilder.Append(value);
+            }
+
+            void AddSeparator()
+            {
+                if (_stringBuilder.Length > 0)
+                    _stringBuilder.Append('-');
+            }
+        }
+
+        // Сделал для проверки значений при отладке
         public override string ToString() => $"{Id}_{X}_{Y}_{Z}_{Level}";
     }
 }

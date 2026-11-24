@@ -6,40 +6,58 @@
         xmlns:local="clr-namespace:Svrin.Wpf.View"
         xmlns:vm="clr-namespace:Svrin.Wpf.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800"
+        WindowStartupLocation="CenterScreen">
     <Window.Resources>
         <Style TargetType="Button">
             <Setter Property="Width" Value="100"/>
             <Setter Property="Height" Value="23"/>
         </Style>
+        <Style TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
     </Window.Resources>
-    <Grid Margin="10">
-        <Grid.ColumnDefinitions>
-            
-        </Grid.ColumnDefinitions>
+    <Grid Margin="10,0,10,10">
         <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,5">
-            <TextBlock Text="Поле:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="120"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Документ:"/>
+            <TextBlock Grid.Column="1" Text="{Binding CurrentDocument}" MinWidth="120"/>
+            <Button Grid.Column="2"
+                    Content="Обновить"
+                    Command="{Binding LoadCommand}"
+                    HorizontalAlignment="Right"/>
+        </Grid>
+        
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,5">
+            <TextBlock Text="Поле:" Margin="0,0,5,0"/>
             <ComboBox Width="160"
               ItemsSource="{Binding SearchFields}"
               SelectedItem="{Binding SelectedSearchField}"
               DisplayMemberPath="Title"
               Margin="0,0,10,0"/>
 
-            <TextBlock Text="Поиск:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBlock Text="Поиск:" Margin="0,0,5,0"/>
             <TextBox Width="250"
                      Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged, Delay=300}"/>
 
-            <Button Content="Очистить" Margin="5,0,0,0"
-                    Command="{Binding ClearSearchCommand}"/>
+            <CheckBox IsChecked="{Binding ShowTimeReport, UpdateSourceTrigger=PropertyChanged}"
+                      VerticalAlignment="Center"
+                      VerticalContentAlignment="Center"
+                      Content="Показать время выполнения"/>
         </StackPanel>
 
-        <DataGrid Grid.Row="1"
+        <DataGrid Grid.Row="2"
                   SelectionMode="Single"
                   AutoGenerateColumns="False"
                   RowHeaderWidth="0"
@@ -86,38 +104,39 @@
                                     Header="Текущее значение"
                                     Binding="{Binding CurrentValue, Mode=OneWay}"
                                     Width="*"/>
-                <DataGridTemplateColumn Header="Новое значение" Width="*">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding NewValue, Mode=OneWay}">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding HasErrors}" Value="True">
-                                                <Setter Property="Foreground" Value="Gray"/>
-                                                <Setter Property="ToolTip" Value="Шаблон содержит ошибку"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Новое значение"
+                                    Binding="{Binding NewValue,
+                                      UpdateSourceTrigger=PropertyChanged,
+                                      ValidatesOnNotifyDataErrors=True}">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="ToolTip"
+                                    Value="{Binding RelativeSource={RelativeSource Self},
+                                Path=(Validation.Errors)[0].ErrorContent}" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+
+                    <DataGridTextColumn.EditingElementStyle>
+                        <Style TargetType="TextBox">
+                            <Setter Property="ToolTip"
+                                    Value="{Binding RelativeSource={RelativeSource Self},
+                                Path=(Validation.Errors)[0].ErrorContent}" />
+                        </Style>
+                    </DataGridTextColumn.EditingElementStyle>
+
+                </DataGridTextColumn>
             </DataGrid.Columns>
         </DataGrid>
 
-        <StackPanel Grid.Row="2" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,5,0,0">
+        <StackPanel Grid.Row="3" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,5,0,0">
             <Button Content="Настройки"
                     Command="{Binding OpenSettingsCommand}"
                     HorizontalAlignment="Right"/>
             
             <StackPanel  Orientation="Horizontal" Margin="0,5,0,0">
                 <Button Content="Применить"
-                        Command="{Binding ApplyCommand}"/>
-                <Button Content="Обновить"
-                        Command="{Binding LoadCommand}"
-                        Margin="5,0"/>
+                        Command="{Binding ApplyCommand}" Margin="0,0,5,0"/>
+                
                 <Button Content="Закрыть"
                         Command="{Binding CloseCommand}"/>
             </StackPanel>

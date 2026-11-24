@@ -18,6 +18,7 @@ namespace Svrin.Core.Abstractions
                 {
                     // BuiltInCategory.OST_Walls
                     Id = -2000011L,
+                    Name = "Стены",
                     ParameterName = "Марка",
                     Prefix = "С"
                 },
@@ -25,6 +26,7 @@ namespace Svrin.Core.Abstractions
                 {
                     // BuiltInCategory.OST_Doors
                     Id = -2000023L,
+                    Name = "Двери",
                     ParameterName = "Марка",
                     Prefix = "Д"
                 },
@@ -32,6 +34,7 @@ namespace Svrin.Core.Abstractions
                 {
                     // BuiltInCategory.OST_Windows
                     Id = -2000014L,
+                    Name = "Окна",
                     ParameterName = "Марка",
                     Prefix = "О"
                 },
@@ -39,6 +42,7 @@ namespace Svrin.Core.Abstractions
                 {
                     // BuiltInCategory.OST_Rooms
                     Id = -2000160L,
+                    Name = "Помещения",
                     ParameterName = "Номер",
                     Prefix = "Р"
                 }

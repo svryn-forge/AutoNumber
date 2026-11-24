@@ -1,10 +1,8 @@
 ﻿using Autodesk.Revit.UI;
 using Microsoft.Extensions.DependencyInjection;
-using Svrin.App.Commands.Renumber.EventHandlers;
 using Svrin.App.MainPanel;
 using Svrin.App.Revit.Extensions;
 using Svrin.App.Revit.Helpers;
-using Svrin.Core.Abstractions;
 using Svrin.Core.Properties;
 using Svrin.Wpf.Abstractions;
 using System.Windows;
@@ -15,7 +13,7 @@ namespace Svrin.App
     {
         internal static IServiceProvider Services { get; private set; } = null!;
 
-        private static readonly HashSet<int> _supportedVersions =
+        private static readonly IReadOnlyCollection<int> _supportedVersions =
         [
             2022, 2024, 2025
         ];
@@ -69,7 +67,7 @@ namespace Svrin.App
             return Result.Succeeded;
         }
 
-        public static void CreateRibbon(UIControlledApplication application, HashSet<int> supportedVersions)
+        public static void CreateRibbon(UIControlledApplication application, IReadOnlyCollection<int> supportedVersions)
         {
             var app = application.ControlledApplication;
 

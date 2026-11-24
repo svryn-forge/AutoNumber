@@ -68,10 +68,16 @@ namespace Svrin.Wpf.ViewModels
             error = string.Empty;
 
             if (categories.Any(c => string.IsNullOrWhiteSpace(c.ParameterName)))
-            { error = "У всех категорий должно быть заполнено ParameterName."; return false; }
+            { 
+                error = "У всех категорий должно быть заполнено ParameterName.";
+                return false;
+            }
 
             if (categories.Any(c => c.Padding < 0))
-            { error = "Padding не может быть отрицательным."; return false; }
+            {
+                error = "Padding не может быть отрицательным.";
+                return false;
+            }
 
             return true;
         }

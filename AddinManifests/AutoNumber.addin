@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>AutoNumber</Name>
+    <Assembly>AutoNumber\Svrin.App.dll</Assembly>
+    <AddInId>733953C6-0088-4014-941E-A71E65A03213</AddInId>
+    <FullClassName>Svrin.App.ExternalApplication</FullClassName>
+    <VendorId>noname</VendorId>
+    <VendorDescription>empty</VendorDescription>
+  </AddIn>
+</RevitAddIns>

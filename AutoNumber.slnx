@@ -4,13 +4,20 @@
     <BuildType Name="r2024" />
     <BuildType Name="r2025" />
   </Configurations>
+  <Folder Name="/AddinManifests/">
+    <File Path="AddinManifests/AutoNumber.addin" />
+  </Folder>
   <Folder Name="/Build/">
     <File Path="Build/build-script.ps1" />
     <File Path="Build/RevitProject.props" />
     <File Path="Build/RvtInstallPath.props" />
     <File Path="Build/RvtVersions.props" />
   </Folder>
+  <Folder Name="/Элементы решения/">
+    <File Path="README.md" />
+  </Folder>
   <Project Path="Svrin.App/Svrin.App.csproj" />
   <Project Path="Svrin.Core/Svrin.Core.csproj" />
+  <Project Path="Svrin.Tests/Svrin.Tests.csproj" Id="a02905d2-a32e-4219-999c-25922f15c55d" />
   <Project Path="Svrin.Wpf/Svrin.Wpf.csproj" />
 </Solution>

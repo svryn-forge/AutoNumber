@@ -1,24 +1,33 @@
 ﻿using Autodesk.Revit.DB;
+using Svrin.App.Revit.Extensions;
 
 namespace Svrin.App.Revit.Models
 {
     internal class TransactionPreprocessor : IFailuresPreprocessor
     {
+        public List<string> Warnings { get; } = new List<string>();
+
         public FailureProcessingResult PreprocessFailures(FailuresAccessor failuresAccessor)
         {
-            failuresAccessor.DeleteAllWarnings();
+            var failures = failuresAccessor.GetFailureMessages();
 
-            FailureProcessingResult result;
-            if (failuresAccessor.GetFailureMessages().Count > 0)
+            foreach (var failure in failures)
             {
-                result = FailureProcessingResult.ProceedWithRollBack;
-            }
-            else
-            {
-                result = FailureProcessingResult.Continue;
+                if (failure.GetSeverity() != FailureSeverity.Warning)
+                    continue;
+
+                var description = failure.GetDescriptionText();
+
+                var elementIds = failure
+                    .GetFailingElementIds()
+                    .Select(id => id.GetValue().ToString());
+
+                Warnings.Add($"{description}. ID элементов: {string.Join(", ", elementIds)}");
+
+                failuresAccessor.DeleteWarning(failure);
             }
 
-            return result;
+            return FailureProcessingResult.Continue;
         }
     }
 }
