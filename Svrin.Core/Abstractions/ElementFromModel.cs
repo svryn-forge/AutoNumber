@@ -66,7 +66,9 @@ namespace Svrin.Core.Abstractions
         public double Z { get; set; }
 
         public bool HasErrors => !string.IsNullOrEmpty(NewValueError);
-        public string? NewValueError => _settings == null || string.IsNullOrWhiteSpace(_settings.Template) ? null : TemplateFormatter.ValidateValue(_settings.Template!, NewValue);
+        public string? NewValueError => _settings == null || string.IsNullOrWhiteSpace(_settings.Template)
+            ? null
+            : TemplateFormatter.ValidateValue(_settings.Template!, NewValue, _settings.Prefix, Level);
 
         public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
 

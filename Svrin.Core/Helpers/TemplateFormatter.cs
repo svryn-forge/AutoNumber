@@ -7,7 +7,11 @@ namespace Svrin.Core.Helpers
     {
         private static readonly Regex PlaceholderRegex = new Regex(@"\{([^{}:]+)(?::([^{}]+))?\}", RegexOptions.Compiled);
 
-        public static string? ValidateValue(string template, string value)
+        public static string? ValidateValue(
+            string template,
+            string value,
+            string prefix,
+            string level)
         {
             var pattern = new StringBuilder();
             var position = 0;
@@ -17,28 +21,34 @@ namespace Svrin.Core.Helpers
                 pattern.Append(Regex.Escape(
                     template.Substring(position, match.Index - position)));
 
-                var name = match.Groups[1].Value;                        // "N" / "Number" / ...
-                var format = match.Groups[2].Success                       // "0", "00" или null
+                var name = match.Groups[1].Value;
+                var format = match.Groups[2].Success
                     ? match.Groups[2].Value
                     : null;
 
                 switch (name)
                 {
                     case "Prefix":
-                        pattern.Append(@"\p{L}");
+                        pattern.Append(Regex.Escape(prefix));
                         break;
 
                     case "Уровень":
                     case "Level":
-                        pattern.Append(".+?");
+                        pattern.Append(Regex.Escape(level));
                         break;
 
                     case "N":
                     case "Number":
                         if (format != null && Regex.IsMatch(format, @"^0+$"))
-                            pattern.Append(@"\d{" + format.Length + "}");
+                        {
+                            pattern.Append(@"[0-9]{");
+                            pattern.Append(format.Length);
+                            pattern.Append('}');
+                        }
                         else
-                            pattern.Append(@"\d+");
+                        {
+                            pattern.Append(@"[1-9][0-9]*");
+                        }
                         break;
 
                     default:
@@ -52,7 +62,10 @@ namespace Svrin.Core.Helpers
             pattern.Append(Regex.Escape(
                 template.Substring(position)));
 
-            return Regex.IsMatch(value ?? string.Empty, "^" + pattern + "$")
+            return Regex.IsMatch(
+                value ?? string.Empty,
+                "^" + pattern + "$",
+                RegexOptions.CultureInvariant)
                 ? null
                 : "Значение не соответствует шаблону.";
         }

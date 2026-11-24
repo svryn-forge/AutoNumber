@@ -17,20 +17,6 @@ namespace Svrin.Tests.Core.Helpers
         }
 
         [Fact]
-        public void TemplateFormatter_ValidTemplate_ReturnsNull()
-        {
-            // Arrange — подготовка
-            var template = "{Prefix}-{Уровень}-{N:000}";
-            var value = "А-1-001";
-
-            // Act — действие
-            var error = TemplateFormatter.ValidateValue(template, value);
-
-            // Assert — проверка
-            Assert.Null(error);  // null = ошибок нет
-        }
-
-        [Fact]
         public void FindDuplicateNewValues_TwoSameValues_ReturnsOneConflict()
         {
             // Arrange

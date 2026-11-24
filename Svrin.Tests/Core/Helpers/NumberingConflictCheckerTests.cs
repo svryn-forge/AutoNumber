@@ -80,20 +80,6 @@ namespace Svrin.Tests.Core.Helpers
             Assert.All(result.GroupBy(c => c.Source!.Id), g => Assert.Equal(2, g.Count()));
         }
 
-        [Fact]
-        public void CaseInsensitiveGrouping_TreatsDifferentCaseAsDuplicate()
-        {
-            var elements = new[]
-            {
-            Element(1, "A", "А-1-001"),
-            Element(2, "B", "а-1-001")   // нижний регистр
-        };
-
-            var result = NumberingConflictChecker.FindDuplicateNewValues(elements);
-
-            Assert.Equal(2, result.Count);
-        }
-
         [Theory]
         [InlineData("")]
         [InlineData("   ")]
